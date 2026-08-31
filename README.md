@@ -1,73 +1,93 @@
-# Welcome to your Lovable project
+# Remix of <dn.nexus>
 
-## Project info
+Objetivo: Criar todo o schema do banco de dados no Supabase para a aplicação "Nexus AI", incluindo a habilitação da extensão de vetores e a definição de todas as tabelas necessárias para a plataforma multi-tenant.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+Gere um script SQL para ser executado em um projeto Supabase.
 
-## How can I edit this code?
+Este script deve realizar as seguintes ações na ordem especificada:
 
-There are several ways of editing your application.
+1.  **Habilitar a extensão `vector`**. É crucial para a funcionalidade de RAG (Retrieval-Augmented Generation).
 
-**Use Lovable**
+2.  **Criar a tabela `profiles`**. Esta tabela armazenará dados públicos dos usuários e será vinculada à tabela `auth.users` do Supabase.
+    *   `id` (uuid, Chave Primária, referenciando `auth.users.id`)
+    *   `email` (text, não nulo)
+    *   `name` (text)
+    *   `company_name` (text)
+    *   `role` (text, com os valores possíveis: 'super_admin', 'admin', 'member')
+    *   `created_at` (timestamp com timezone, padrão now())
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+3.  **Criar a tabela `workspaces`**. Representa os ambientes de trabalho de uma empresa.
+    *   `id` (uuid, Chave Primária, padrão `gen_random_uuid()`)
+    *   `owner_id` (uuid, Chave Estrangeira referenciando `profiles.id`)
+    *   `name` (text, não nulo)
+    *   `icon_char` (text, para um ícone simples de caractere, ex: "M")
+    *   `created_at` (timestamp com timezone, padrão now())
 
-Changes made via Lovable will be committed automatically to this repo.
+4.  **Criar a tabela `agents`**. Configurações dos agentes de IA.
+    *   `id` (uuid, Chave Primária, padrão `gen_random_uuid()`)
+    *   `workspace_id` (uuid, Chave Estrangeira referenciando `workspaces.id`)
+    *   `name` (text, não nulo)
+    *   `persona_prompt` (text, o prompt de sistema para a IA)
+    *   `tone` (text, com valores possíveis: 'friendly', 'professional', 'aggressive')
+    *   `is_active` (boolean, padrão `true`)
+    *   `is_archived` (boolean, padrão `false`)
+    *   `created_at` (timestamp com timezone, padrão now())
 
-**Use your preferred IDE**
+5.  **Criar a tabela `leads`**. Os contatos/clientes.
+    *   `id` (uuid, Chave Primária, padrão `gen_random_uuid()`)
+    *   `workspace_id` (uuid, Chave Estrangeira referenciando `workspaces.id`)
+    *   `assigned_agent_id` (uuid, Chave Estrangeira referenciando `agents.id`, pode ser nulo)
+    *   `name` (text)
+    *   `phone` (text, deve ser único dentro de um workspace)
+    *   `status` (text, com valores possíveis: 'new', 'ai_talking', 'needs_human', 'closed')
+    *   `ai_summary` (text, resumo gerado pela IA)
+    *   `notes` (text, anotações internas)
+    *   `last_message_at` (timestamp com timezone)
+    *   `created_at` (timestamp com timezone, padrão now())
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+6.  **Criar a tabela `messages`**. Histórico de chat.
+    *   `id` (bigint, Chave Primária, gerado sempre como identidade)
+    *   `lead_id` (uuid, Chave Estrangeira referenciando `leads.id`)
+    *   `workspace_id` (uuid, Chave Estrangeira referenciando `workspaces.id`)
+    *   `content` (text, não nulo)
+    *   `sender_type` (text, com valores possíveis: 'ai', 'lead', 'human_agent')
+    *   `agent_id` (uuid, Chave Estrangeira referenciando `agents.id`, pode ser nulo)
+    *   `created_at` (timestamp com timezone, padrão now())
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+7.  **Criar a tabela `knowledge_bases`**. Para agrupar fontes de conhecimento do RAG.
+    *   `id` (uuid, Chave Primária, padrão `gen_random_uuid()`)
+    *   `workspace_id` (uuid, Chave Estrangeira referenciando `workspaces.id`)
+    *   `name` (text, não nulo)
+    *   `description` (text)
+    *   `created_at` (timestamp com timezone, padrão now())
 
-Follow these steps:
+8.  **Criar a tabela `documents`**. Para armazenar os chunks de texto vetorizados.
+    *   `id` (bigint, Chave Primária, gerado sempre como identidade)
+    *   `knowledge_base_id` (uuid, Chave Estrangeira referenciando `knowledge_bases.id`)
+    *   `content` (text, não nulo)
+    *   `embedding` (vector(1536), a dimensão do embedding)
+    *   `metadata` (jsonb)
+    *   `created_at` (timestamp com timezone, padrão now())
+
+Adicione comentários no script SQL para explicar cada bloco de criação de tabela.
+
+This project was built with [Lovable](https://lovable.dev).
+
+## Build with Lovable
+
+Continue developing this project in the [Lovable editor](https://lovable.dev/projects/25f348a6-8e29-43b9-ad22-d30f55395ca0).
+
+- **Ship faster**: describe what you want to build and Lovable handles the code.
+- **Stay in sync**: every change made in Lovable is committed straight to this repository.
+- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
+
+## Development
+
+Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
+git clone <this-repository-url>
+cd <repository-name>
 npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
 npm run dev
 ```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
