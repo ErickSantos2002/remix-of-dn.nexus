@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- sincronizado a mao com --dn-dark-950 do src/index.css (o head precisa de hex literal antes do CSS carregar) -->
+    <meta name="theme-color" content="#04070F" />
+    <title>Nexus AI - Plataforma de Atendimento Inteligente</title>
+    <meta name="description" content="Nexus AI - Plataforma de atendimento ao cliente com inteligência artificial">
+    <meta name="author" content="Nexus AI" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/081694c7-1604-405e-938b-3838c9f39fea/id-preview-2714aa20--f334bd90-8806-49b0-8de4-1f06503aa80a.lovable.app-1779123419586.png">
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@NexusAI" />
+    <meta name="twitter:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/081694c7-1604-405e-938b-3838c9f39fea/id-preview-2714aa20--f334bd90-8806-49b0-8de4-1f06503aa80a.lovable.app-1779123419586.png">
+
+  <meta property="og:title" content="Nexus AI - Plataforma de Atendimento Inteligente">
+  <meta name="twitter:title" content="Nexus AI - Plataforma de Atendimento Inteligente">
+  <meta property="og:description" content="Nexus AI - Plataforma de atendimento ao cliente com inteligência artificial">
+  <meta name="twitter:description" content="Nexus AI - Plataforma de atendimento ao cliente com inteligência artificial">
+
+    <!-- Preconnect to backend (Supabase) for faster first request on public routes -->
+    <link rel="preconnect" href="https://apbvnbubxyaihygnxdev.supabase.co" crossorigin>
+
+    <!-- Critical inline CSS — paints background + textual skeleton immediately
+         so the browser registers a real FCP on /schedule/:id without waiting
+         for the JS chunk, the CSS chunk, or the Supabase data fetch. -->
+    <style>
+      html,body{margin:0;padding:0;background:#04070F;color:#F0F4FF;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+      #root{min-height:100vh}
+      .nx-skel{min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:24px 16px}
+      .nx-skel-wrap{width:100%;max-width:640px;display:flex;flex-direction:column;align-items:center;gap:20px;padding-top:24px}
+      .nx-skel-logo{height:42px;width:160px;background:linear-gradient(90deg,rgba(255,255,255,.04),rgba(255,255,255,.08),rgba(255,255,255,.04));border-radius:6px;animation:nx-pulse 1.4s ease-in-out infinite}
+      .nx-skel-title{font-size:22px;line-height:1.25;font-weight:600;text-align:center;color:#FAFAF9;margin:8px 0 0;letter-spacing:-.01em}
+      .nx-skel-sub{font-size:13px;color:#8C7A6E;text-align:center;margin:0}
+      .nx-skel-card{width:100%;background:rgba(22,19,17,.6);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:14px}
+      .nx-skel-row{height:14px;border-radius:6px;background:linear-gradient(90deg,rgba(255,255,255,.04),rgba(255,255,255,.08),rgba(255,255,255,.04));animation:nx-pulse 1.4s ease-in-out infinite}
+      .nx-skel-input{height:44px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06)}
+      .nx-skel-btn{height:44px;border-radius:8px;background:rgba(61,97,255,.35);margin-top:4px}
+      @keyframes nx-pulse{0%,100%{opacity:.6}50%{opacity:1}}
+      @media (min-width:640px){.nx-skel-title{font-size:28px}}
+    </style>
+
+    <!-- Route-aware head: skip Google Fonts on /schedule/:id (uses system-ui).
+         For all other routes, load Sora/Space Mono non-blocking. -->
+    <script>
+      (function () {
+        var isSchedule = /^\/schedule\//.test(window.location.pathname);
+        if (!isSchedule) {
+          var href = 'https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap';
+          var pc1 = document.createElement('link'); pc1.rel='preconnect'; pc1.href='https://fonts.googleapis.com';
+          var pc2 = document.createElement('link'); pc2.rel='preconnect'; pc2.href='https://fonts.gstatic.com'; pc2.crossOrigin='';
+          var l = document.createElement('link'); l.rel='preload'; l.as='style'; l.href=href;
+          l.onload = function(){ this.onload=null; this.rel='stylesheet'; };
+          document.head.appendChild(pc1); document.head.appendChild(pc2); document.head.appendChild(l);
+        }
+      })();
+    </script>
+
+  <!-- Prefetch schedule-widget payload before React mounts on /schedule/:id.
+       Resolved JSON is stored synchronously in __nexusScheduleData so the
+       React page can hydrate without an extra fetch round-trip. -->
+  <script>
+    (function () {
+      try {
+        var m = window.location.pathname.match(/^\/schedule\/([^\/?#]+)/);
+        if (!m) return;
+        var widgetId = m[1];
+        var now = new Date();
+        var month = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+        var url = 'https://apbvnbubxyaihygnxdev.supabase.co/functions/v1/schedule-widget?widget_id=' + encodeURIComponent(widgetId) + '&month=' + month;
+        var key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwYnZuYnVieHlhaWh5Z254ZGV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwOTk4MDIsImV4cCI6MjA4MDY3NTgwMn0.vzLjyMKpGIucsgVsYzWryjNDjEYmItzwOdkuflpWg3M';
+        var cacheKey = widgetId + '|' + month;
+        var data = window.__nexusScheduleData = window.__nexusScheduleData || {};
+        var pending = window.__nexusSchedulePrefetch = window.__nexusSchedulePrefetch || {};
+        pending[cacheKey] = fetch(url, { headers: { apikey: key } })
+          .then(function (r) { return r.json(); })
+          .then(function (json) { data[cacheKey] = json; return json; })
+          .catch(function () { return null; });
+      } catch (e) { /* noop */ }
+    })();
+  </script>
+</head>
+
+  <body>
+    <div id="root"></div>
+    <script>
+      (function () {
+        try {
+          if (/^\/schedule\//.test(window.location.pathname)) {
+            document.getElementById('root').innerHTML = '<div class="nx-skel"><div class="nx-skel-wrap"><div class="nx-skel-logo"></div><h1 class="nx-skel-title">Agende sua reunião</h1><p class="nx-skel-sub">Carregando horários disponíveis…</p><div class="nx-skel-card"><div class="nx-skel-row" style="width:40%"></div><div class="nx-skel-input"></div><div class="nx-skel-row" style="width:30%"></div><div class="nx-skel-input"></div><div class="nx-skel-row" style="width:35%"></div><div class="nx-skel-input"></div><div class="nx-skel-btn"></div></div></div></div>';
+          }
+        } catch (e) { /* noop */ }
+      })();
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
